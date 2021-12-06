@@ -1,0 +1,70 @@
+eff Frederich
+👍👎
+Boudewijn
+Hello. I build an application which visualises energy consumption from smart meter data using ZingChart. The application runs on a Synology nas system. I'm considering packaging the application and making it available free of charge for Synology nas users via their app store. If I do so can the application still make use of the "Branded license". 
+
+Chat started
+Norman joined the chat
+
+Norman
+Hi there
+
+Are you still there?
+Boudewijn
+Yes I am
+
+Jeff Frederich joined the chat
+
+Norman
+Great, Ill have our lead sales answer your question
+
+Jeff Frederich
+Hello
+Boudewijn
+Hello Jeff
+
+
+Jeff Frederich
+I am not sure what the licensing requirements are within the Synology app stores
+
+You can use the branded version but you will likely need to include something in your readme about using ZingChart.  Users of your app would need to license the product individually if they want to remove branding or have access to support.
+Boudewijn
+NAS users who purchased a Synology NAS can download NAS apps free of charge. Apps can only be downloaded and used on Synology products
+
+
+Jeff Frederich
+So the issue would be if a Synology user builds something on Synology to sell, which includes ZingChart.  They will not have licensing.  So you would need to make it clear in your readme, license, etc that you have included commercial software in your app which may require additional licensing.
+
+But you're welcome to include the branded version as long as our watermark appears on the charts.
+Boudewijn
+Ok all software in the app would carry the GNU General Public License as published: http://www.gnu.org/licenses/
+
+Yes of course the brand will remain in the product
+
+The ZingChart brand that is
+
+Thanks for your help
+
+
+Jeff Frederich
+So the branded version is fine, but note ZingChart does not fit GNU licensing
+
+So you are including a commercial product in an app with GNU licensing...so if Synology allows that your should be okay.
+Boudewijn
+No I understand. My product does but I can exclude the Zingchart plugin and publish that under the Zingchart branded license option. right.
+
+Great!
+
+
+Jeff Frederich
+Please let me know if you have additional questions
+
+You can reach me directly at
+
+jfrederich@zingchart.com if you have specific questions...otherwise happy charting.
+Boudewijn
+Thanks a lot. You guys are excellent I must say!
+
+
+Jeff Frederich
+Im glad we have been helpful

@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html>
+<!-- 
+Description: HTML Web page for displaying energy information from smart meters
+Date: 25-Jul-2018
+version: 2.2 (Optimized for Synology DSM 6.0)
+Author: B. van de Moesdijk
+License: 
+	This file is part of EnergyCompas.
+
+    EnergyCompass is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    any later version.
+
+    EnergyCompass is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with EnergyCompass.  If not, see <http://www.gnu.org/licenses/>.
+-->
+<head>
+	<title>Energy Compass - Verbruiksoverzicht</title>
+	<meta charset="utf-8"> </meta>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<link rel="apple-touch-icon" href="/energycompass/images/compass-rose-152-201718.png">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
+  	<!--meta name="viewport" content="width=device-width, initial-scale=1"--> </meta>
+	<link rel="shortcut icon" type="image/x-icon" href="/energycompass/images/favicon.ico"/>
+	<link rel="stylesheet" type="text/css" href="index.css" media="screen"/>
+    <!--script type="text/javascript" src="/energycompass/zingchart_2.9.3/zingchart.min.js"></script--> 
+    <script src="https://cdn.zingchart.com/zingchart.min.js"></script>
+	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  	<script src="js/overview.js"></script>
+  	<script src="js/history.js"></script>
+  	<script src="js/cost.js"></script>
+  	<script src="js/weather.js"></script>
+  	<!-- More Javascripts are executed and the end of the <body> section -->
+  	
+<style>
+</style>	
+</head>
+
+<body>
+ <div class="header1">  
+   <div class="logo">
+       <img src="/energycompass/images/compass-rose-152-201718.png" onclick="window.location.reload()" style="width:80%;"/> 
+       <!--img src="/images/compass-rose-152-201718.png" style="width:100%;"/-->
+   </div>
+   <!--div class="relative_header2">
+   		<img src="house.png"/>
+   </div-->
+   <div class="relative_header1">
+       <h1> <strong> ENERGYCOMPASS</strong></h1>
+       <h1> Smartmeter Dashboard <var id="Address">Address</var> </h>
+   </div>
+ </div>
+
+ <div class="tab">
+	<button class="tableft" onclick="openTab(event, 'Overview')"id="defaultTabOpen">Overzicht</button>
+  	<button class="tableft" onclick="openTab(event, 'History')">Historie</button>
+  	<button class="tableft" onclick="openTab(event, 'Cost')">Kosten</button>
+  	<button class="tableft" onclick="openTab(event, 'Weather')">Weer</button>
+  	<button class="tableft" onclick="openTab(event, 'Current Load')">Huidig Last</button>
+  	<button class="tableft" onclick="openTab(event, 'Config')">Instellingen</button>
+  	<button class="tableft" onclick="openTab(event, 'HomeAutomation')">Zonnescherm Instellingen</button>
+ </div>
+
+ <div id="Overview" class="tabcontent">
+  <span onclick="this.parentElement.style.display='none'" class="topright">x</span>
+     <br>
+     <br>
+     <button class="ovvbtn" id="ovvGas" onclick="ovvSelect(event, 'Gas')" style="width:150px">Gas</button>
+	 <button class="ovvbtn" id="ovvElectricity" onclick="ovvSelect(event, 'Electricity')" style="width:150px">Elektriciteit</button> 
+	 <br>
+ 	 <br>
+  	<div class="float-box-tab1">
+      	<div id="weekChart"></div>
+  	</div>
+  	<div class="float-box-tab2">
+      	<div id="Used-Chart"></div>
+  	</div>
+  	<div class="after-box">
+      	<div id="dayChart"></div>
+  	</div>
+  	<div class="after-box">
+      	<div id="monthChart"></div>
+  	</div>
+  	<div class="after-box">
+      	<div id="yearChart"></div>
+   </div>
+ </div>
+ 
+ 
+ 
+<div id="History" class="tabcontent">
+  <span onclick="this.parentElement.style.display='none'" class="topright">x</span>
+    <br>
+    <br>
+    <button class="hstbtn" id="hstGas" onclick="hstSourceClick(event, 'Gas', )" style="width:150px">Gas</button>
+	<button class="hstbtn" id="hstElectricity" onclick="hstSourceClick(event, 'Electricity')" style="width:150px">Elektriciteit</button> 
+    <br>
+    <br>
+	<div class="after-box">
+	</div>
+	<div  class="float-box-calendar">
+      <div id="EnergyUse">
+            <br>
+            <br>
+            <div id="datepicker"></div>
+      </div>
+    </div>
+    <div class="float-table">
+    	<caption> <h3> Meterstanden overzicht <var id="date1"> </var></h3> </caption>
+        <table style="width:100%">
+  			<tr>
+  				<th id="tbl1Rw0Cln1" colspan="1">  </th>
+  				<th id="tbl1Rw0Cln2" colspan="2"> Verbruikstand </th>
+  				<th id="tbl1Rw0Cln3" colspan="2"> Leverstand </th>
+    		</tr>
+    		<tr>
+    			<th id="tbl1Rw1Cln1">Produkt</th>
+    			<th id="tbl1Rw1Cln2">Begin</th> 
+    			<th id="tbl1Rw1Cln3">Eind</th>
+    			<th id="tbl1Rw1Cln4">Begin</th>
+    			<th id="tbl1Rw1Cln5">Eind</th>
+  			</tr>
+  			<tr>
+    			<td id="tbl1Rw2Cln1"><var id="counter1">produkt</var> </td>
+    			<td id="tbl1Rw2Cln2"> <var id="counter1Begin">selecteer dag</var> </td>
+    			<td id="tbl1Rw2Cln3"> <var id="counter1End">selecteer dag</var> </td>
+    			<td id="tbl1Rw2Cln4"> <var id="deliver1Begin">selecteer dag</var> </td>
+    			<td id="tbl1Rw2Cln5"> <var id="deliver1End">selecteer dag</var> </td>
+  			</tr>
+  			<tr>
+    			<td id="tbl1Rw3Cln1"> <var id="counter2">produkt</var> </td>
+    			<td id="tbl1Rw3Cln2"> <var id="counter2Begin">selecteer dag</var> </td>
+    			<td id="tbl1Rw3Cln3"> <var id="counter2End">selecteer dag</var> </td>
+    			<td id="tbl1Rw3Cln4"> <var id="deliver2Begin">selecteer dag</var> </td>
+    			<td id="tbl1Rw3Cln5"> <var id="deliver2End">selecteer dag</var> </td>
+  			</tr>
+		</table>
+    	<caption> <h3> Dag verbruik overzicht <var id="date2"> </var></h3> </caption>
+        <table style="width:100%">
+        	<tr>
+  				<th id="tbl2Rw0Cln1" colspan="1">  </th>
+  				<th id="tbl2Rw0Cln2" colspan="2"> Verbruik </th>
+  				<th id="tbl2Rw0Cln3" colspan="2"> Levering </th>
+    		</tr>
+  			<tr>
+    			<th id="tbl1Rw1Cln1">Produkt</th>
+    			<th id="tbl2Rw1Cln2">Dag totaal</th> 
+    			<th id="tbl2Rw1Cln3">Dag piek</th>
+    			<th id="tbl2Rw1Cln4">Dag totaal</th> 
+    			<th id="tbl2Rw1Cln5">Dag piek</th>
+  			</tr>
+  			<tr>
+    			<td id="tbl2Rw2Cln1"> <var id="source">produkt</var> </td>
+    			<td id="tbl2Rw2Cln2"> <var id="totalUsage">selecteer dag</var> </td>
+    			<td id="tbl2Rw2Cln3"> <var id="peakUsage">selecteer dag</var> </td>
+    			<td id="tbl2Rw2Cln4"> <var id="totalDelivery">selecteer dag</var> </td>
+    			<td id="tbl2Rw2Cln5"> <var id="peakDelivery">selecteer dag</var> </td>
+  			</tr>
+		</table>
+	</div>
+
+	<div class="after-box">
+      	<div id="historyChart"> </div>  
+    </div>
+    <div class="after-box">
+      	<div id="historyDayMonthChart"> </div>  
+    </div>
+    <div class="float-box-tab1">    
+      	<div id="historyYearChart"> </div>
+    </div>
+    <div class="float-box-tab2">    
+      	<div id="historyMonthChart"> </div>
+    </div>
+</div>
+
+
+<div id="Cost" class="tabcontent">
+<span onclick="this.parentElement.style.display='none'" class="topright">x</span>
+    <br>
+    <br>
+    <button class="cstbtn" id="cstGas" onclick="cstSelect(event, 'Gas')" style="width:150px">Gas</button>
+	<button class="cstbtn" id="cstElectricity" onclick="cstSelect(event, 'Electricity')" style="width:150px">Elektriciteit</button> 
+    <br>
+    <br>
+	<div class="after-box">    
+      	<div id="monthCostChart"> </div>
+    </div>
+    <div class="after-box">    
+      	<div id="yearCostChart"> </div>
+    </div>
+    <div class="float-box-tab1">    
+      	<div id="totalYearCostChart"> </div>
+    </div>
+</div>
+
+
+ <div id="Weather" class="tabcontent">
+  <span onclick="this.parentElement.style.display='none'" class="topright">x</span>
+  	<div class="fixed-tabTitle">
+    	<h3> <var id="weatherStation">Weerstation</var> </h3>
+    </div>
+     <br>
+     <button class="wtrbtn" id="station" onclick="wtrSelect(event, 'station')" style="width:150px">Weerstation</button>
+	 <button class="wtrbtn" id="period" onclick="wtrSelect(event, 'period')" style="width:150px">Periode</button> 
+	 <br>
+     <br>
+     <br>
+     <!-- Station View ################################################################-->
+    <div class="float-box-tab4">
+      	<div id="weatherGauge1"></div>
+    </div>
+    <div class="float-box-tab4">
+      	<div id="weatherGauge2"></div>
+      	<div id="Series"></div>
+  	</div>
+  	 <!-- Period View #################################################################-->
+    <div class="after-box">
+      	<div id="weatherChart1"></div> 
+    </div>
+  	<div class="after-box">
+      	<div id="weatherChart2"></div>
+  	</div>
+  	<div class="after-box">
+      	<div id="weatherChart3"></div>
+  	</div>
+  	<div class="after-box">
+      	<div id="weatherChart4"></div>
+  	</div>
+ </div> 
+ 
+  
+<div id="Current Load" class="tabcontent">
+ <span onclick="this.parentElement.style.display='none'" class="topright">x</span>
+    <div class="fixed-tabTitle">
+    	<h2> Huidige elektrische last </h2>
+    </div>
+     <br>
+     <div class="float-box-Guage1">
+      	<div id="currentGaugeL1"></div>
+  	</div>
+  	<div class="float-box-Guage2">
+      	<div id="currentGaugeL2"></div>
+  	</div>
+  	<div class="float-box-Guage3">
+      	<div id="currentGaugeL3"></div>
+  	</div>
+  	<div class="after-box">
+  	<br>
+  	  	<div id="currentChart"></div>
+  	</div>
+  	<br>
+ </div>
+
+ 
+ 
+ <div id="Config" class="tabcontent">
+    <span onclick="this.parentElement.style.display='none'" class="topright">x</span>
+    <br><br>	
+    <div id="cnfLeft" class="float-box-left" style="background-color:#DDD">
+        <button type="button" class="collapsible">Status P1 Service Interface</button>
+        <div class="float-box-tab1" style="padding-top:20px; padding-bottom:10px; width:45%; float:right">
+            <label class="p1sts" id="p1Status"><h2> Stopped </h2></label>
+            <div class="fixed-tabBtnFooter">
+    	            <br><br>
+    	            <button class="p1btn" onclick="P1Service(event, 'start')" style="width:100px">Start P1 Interface</button>
+    	            <button class="p1btn" onclick="P1Service(event, 'stop')" style="width:100px">Stop P1 Interface</button>
+            </div>
+            <br><br><br>
+    </div>
+    </div>
+    <div id="cnfRight" class="float-box-right">   
+        <button type="button" class="collapsible">Configuratie</button>
+        <div class="content">
+            <br>
+            <div class="settings-labels">
+      	          <label>Meterstanden bijgehouden sinds: </label>
+      	     </div>
+  	         <div class="settings-input">
+      	           <input id="Setting_14" type="text" disabled="true" name="appStartDate"> </input><br>
+      	     </div>
+      	     <div class="settings-labels">
+      	          <label>Smartmeter adres lokatie: </label>
+      	     </div>
+      	     <div class="settings-input">
+      	          <input id="Setting_1" type="text" name="addressName"> </input><br>
+      	     </div>
+      	     <div class="settings-labels">
+      	          <label>Smartmeter merk: </label>
+      	     </div>
+      	     <div class="settings-input">
+  		          <!--Combobox will be auto filled with items from the database "MeterBrands"-->
+      	          <select id="Setting_17" type="text" onChange="addOptionsSetting18(Setting_17.value)" name="meterBrand"></select>
+            </div>
+            <div class="settings-labels">
+      	          <label>Smartmeter type: </label>
+  	        </div>
+  	        <div class="settings-input">
+  	              <!--Combobox will be auto filled with items from the database "MeterBrands"-->
+      	          <select id="Setting_18" type="text" name="meterType"> </select>
+            </div> 
+            <div class="settings-labels" title="Selecteer of er zonne-energie wordt opgewekt mbv zonnecellen">
+       	         <label>Gebruik van zonnecellen: </label>
+            </div>
+            <div class="settings-input">
+        	    <select id="Setting_19" type="text" name="Solar" >
+  				  <option value=0> Nee </option>
+  				  <option value=1> Ja </option>
+			    </select>
+		    </div>
+            <div class="settings-labels">
+      	          <label>Huidige energiecontract start datum: </label>
+      	    </div>
+      	    <div class="settings-input">
+      	          <input id="Setting_16" type="text" name="contractStartDate" > </input><br>
+            </div>
+            <div class="settings-labels">	
+      	          <label>Verwacht jaarverbruik elektriciteit (KWh): </label>
+      	    </div>
+      	    <div class="settings-input">
+       	         <input id="Setting_2" type="number" name="ElecEstUse" > </input><br>
+            </div>
+            <div class="settings-labels">
+                <label>Verwacht jaarverbruik gas (m&#xB3)</label>
+            </div>
+            <div class="settings-input">
+       	         <input id="Setting_3" type="number" name="GasEstUse" > </input><br>
+            </div>
+            <div class="settings-labels" title="Selecteer hoe vaak de verbruiksgegevens moeten worden opgehaald. Let op Gas-verbruik wordt maximaal 1 keer per uur opgehaald ">
+       	         <label>Tijdsinterval ophalen verbruiksgegevens: </label>
+            </div>
+            <div class="settings-input">
+       	         <select name="dftGetData" id="Setting_12" >
+  				      <option value="5"> per 5 minuten </option>
+  				      <option value="10"> per 10 minuten </option>
+  				      <option value="15"> per 15 minuten </option>
+  				      <option value="30"> per 30 minuten </option>
+  				      <option value="60"> per 60 minuten </option>
+			    </select>
+            </div> 	
+            <div class="settings-labels">
+       	         <label>Standaard weergave "Overzicht tab": </label>
+            </div>
+            <div class="settings-input">
+       	         <select name="dftOverview" id="Setting_4" >
+  				      <option value="Gas"> Gas </option>
+  				      <option value="Electricity"> Elektriciteit </option>
+			    </select>
+            </div>
+            <div class="settings-labels">		
+       	         <label>Toon buitentemperatuur in gasverbruik grafiek: </label>
+            </div>
+            <div class="settings-input">
+                <input type="radio" id="1" name="temp" value="1" > Ja </input>
+                <input type="radio" id="0" name="temp" value="0" checked="checked"> Nee </input>
+            </div>
+       	         <br>
+       	         <br>
+       	         <br>
+            <div class="fixed-tabBtnFooter">
+    	        <br><br><br>
+    	        <button class="cnfbtn" onclick="ConfigData(event, 'save')" style="width:100px">Save</button>
+    	        <button class="cnfbtn" onclick="ConfigData(event, 'get')" style="width:100px">Cancel</button>
+            </div>
+            <br><br><br>
+        </div>   
+      
+      <br>
+      
+      <button type="button" class="collapsible">Thema</button>
+        <div class="content">
+            <br>
+            <div class="settings-labels" title="Selecteer een thema voor alle grafieken.">
+       	         <label>Thema grafieken: </label>
+       	     </div>
+       	     <div class="settings-input">
+       	         <select name="ThemeGraph" id="Setting_13" style="width:145px">
+  				      <option value="light"> Standaard </option>
+  				      <option value="dark"> Dark </option>
+  				      <option value="classic"> Classic </option>
+  				 </select>
+  	         </div>
+            <div class="settings-labels">		
+       	         <label>Temperatuur grafiek kleur: </label>
+  	        </div>
+  	        <div class="settings-input">
+       	         <select name="TempGraphColor" id="Setting_5" style="width:145px">
+  				      <option value="yellow"> Geel </option>
+  				      <option value="red"> Rood </option>
+  				      <option value="bleu"> Blauw </option>
+  				      <option value="#66CCFF"> Licht-Blauw </option>
+  				      <option value="orange"> Oranje </option>
+  				      <option value="green"> Groen </option>
+  				      <option value="magenta"> Magenta </option>
+			      </select>
+  	          </div>
+  	          <div class="settings-labels">		
+       	         <label>Elektriciteit grafiek type: </label>
+  	          </div>
+  	          <div class="settings-input">
+       	         <select name="ElecGraphType" id="Setting_6" style="width:145px">
+  				      <option value="line"> Lijn </option>
+  				      <option value="area"> Oppervlak </option>
+  				      <option value="bar"> Staaf </option>
+			    </select>
+  	          </div>
+  	          <div class="settings-labels">		
+  	              <label>Elektriciteit grafiek kleur: </label>
+  	          </div>
+  	          <div class="settings-input">
+  	              <select name="ElecGraphColor" id="Setting_7" style="width:145px">
+  				      <option value="green"> Groen </option>
+  				      <option value="#00A2C9"> Standaard </option>
+  				      <option value="#66CCFF"> Licht-Blauw </option>
+  				      <option value="red"> Rood </option>
+  				      <option value="brown"> Bruin </option>
+			    </select>
+  	          </div>
+  	          <div class="settings-labels">		
+  	              <label>Teruggeleverde elektriciteit grafiek kleur: </label>
+  	          </div>
+  	          <div class="settings-input">
+  	              <select name="DelivElecGraphColor" id="Setting_15" style="width:145px">
+       			     <option value="DoNotShow"> Niet tonen </option>
+  				      <option value="green"> Groen </option>
+  				      <option value="#66CCFF"> Licht-Blauw </option>
+  				      <option value="red"> Rood </option>
+  				      <option value="brown"> Bruin </option>
+			        </select>
+  	          </div>
+  	          <div class="settings-labels">		
+       	         <label>Gasverbruik grafiek type: </label>
+  	          </div>
+  	          <div class="settings-input">
+       	         <select name="GasGraphType" id="Setting_8" style="width:145px">
+  				      <option value="bar"> Staaf </option>
+  				      <option value="line"> Lijn </option>
+  				      <option value="area"> Oppervlak </option>
+			    </select>
+  	          </div>
+  	          <div class="settings-labels">		
+       	             <label>Gasverbruik grafiek kleur: </label>
+  	          </div>
+  	          <div class="settings-input">
+       	         <select name="GasGraphColor" id="Setting_9" style="width:145px">
+  				      <option value="#00A2C9"> Standaard </option>
+  				      <option value="#66CCFF"> Licht-Blauw </option>
+  				      <option value="green"> Groen </option>
+  				      <option value="red"> Rood </option>
+  				      <option value="brown"> Bruin </option>
+			    </select>
+  	          </div>
+  	          <div class="settings-labels">		
+       	         <label>Gemiddeldverbruik grafiek kleur: </label>
+  	          </div>
+  	          <div class="settings-input">
+       	         <select name="AverageGraphColor" id="Setting_10" style="width:145px">
+  				      <option value="orange"> Oranje </option>
+  				      <option value="red"> Rood </option>
+  				      <option value="blue"> Blauw </option>
+  				      <option value="#66CCFF"> Licht-Blauw </option>
+  				      <option value="yellow"> Geel </option>
+  				      <option value="green"> Groen </option>
+  				      <option value="magenta"> Magenta </option>
+  				      <option value="brown"> Bruin </option>
+			    </select>
+  	          </div>
+  	          <div class="settings-labels">
+    	            <label> Buienradar weerstation: </label>
+            </div>
+            <div class="settings-input">
+    	        <select name="WeatherStationId" id="Setting_11" style="width:145px">
+    			    <option value="6240"> Amsterdam </option>
+    			    <option value="6391"> Venlo </option>
+    			    <option value="6269"> Lelystad </option>
+    			    <option value="6275"> Arnhem </option>
+    			    <option value="6249"> Berkhout </option>
+    			    <option value="6308"> Catzand </option>
+    			    <option value="6260"> Utrecht </option>
+    			    <option value="6260"> de Bilt </option>
+    			    <option value="6235"> den Helder </option>
+    			    <option value="6370"> Eindhoven </option>
+    			    <option value="6377"> Weert </option>
+    			    <option value="6321"> Noortzee </option>
+    			    <option value="6350"> Gilze Rijen </option>
+    			    <option value="6283"> Groenlo </option>
+    			    <option value="6280"> Groningen </option>
+				    <option value="6315"> Hansweert </option>
+				    <option value="6278"> Heino </option>
+				    <option value="6356"> Gorinchem </option>
+				    <option value="6330"> Hoek van Holland </option>
+    			    <option value="6279"> Hoogeveen </option>
+    			    <option value="6251"> Terschelling </option>
+    			    <option value="6285"> Schiermonnikoog </option>
+    			    <option value="6209"> IJmond </option>
+    			    <option value="6277"> Lauwersoog </option>
+    			    <option value="6320"> Goeree </option>
+    			    <option value="6270"> Leeuwarden </option>
+    			    <option value="6348"> Lopik </option>
+    			    <option value="6380"> Maastricht </option>
+    			    <option value="6273"> Marknesse </option>
+    			    <option value="6286"> Nieuw Beerta </option>
+    			    <option value="6312"> Oosterschelde </option>
+    			    <option value="6344"> Rotterdam </option>
+    			    <option value="6316"> Schaar </option>
+    			    <option value="6324"> Midden-Zeeland </option>
+    			    <option value="6267"> Stavoren </option>
+    			    <option value="6316"> Schaar </option> 			
+    	        </select>
+    	        <br>
+    	        <br>
+    	        <br>
+    	    </div>
+            <div class="fixed-tabBtnFooter">
+    	        <br><br><br>
+    	        <button class="cnfbtn" onclick="ConfigData(event, 'save')" style="width:100px">Save</button>
+    	        <button class="cnfbtn" onclick="ConfigData(event, 'get')" style="width:100px">Cancel</button>
+            </div>
+            <br><br><br>
+        </div>
+
+        <br>	  
+  
+        <button type="button" class="collapsible">Last Regeling</button>
+        <div class="content">
+            <br>
+             <div class="settings-labels">	
+      	          <label>Laadunit auto beperken bij een stroomsterkte boven: </label>
+  	         </div>
+  	          <div class="settings-input">
+  	              <select name="LoadMngt" id="Setting_28" style="width:145px">
+  				      <option value="0"> Uitgeschakeld</option>
+  				      <option value="20"> 20 ampere</option>
+  				      <option value="22"> 22 ampere</option>
+  				      <option value="24"> 24 ampere</option>
+			    </select>
+       	         <br>
+       	         <br>
+       	         <br>
+  	          </div>
+  	          <div class="fixed-tabBtnFooter">
+  	              <br><br><br>
+  	              <button class="cnfbtn" onclick="ConfigData(event, 'save')" style="width:100px">Save</button>
+  	              <button class="cnfbtn" onclick="ConfigData(event, 'get')" style="width:100px">Cancel</button>
+  	          </div>
+  	          <br><br><br>
+  	    </div>
+  	    
+  	    <br>
+  		    
+      <button type="button" class="collapsible">Tarieven</button>
+        <div class="content"> 
+        <br>
+        <div class="settings-labels">
+    	    <label> <h3>Tarieven Elektriciteit</h3></label>
+        </div>
+        <div class="settings-labels">
+    	    <label> Enkel of Dubbel Tarief: </label>
+        </div>
+        <div class="settings-input">
+                  <input type="radio" id="3"  name="TarifType" value="0" >Enkel</input>
+                <input type="radio" id="2" name="TarifType" value="1" checked="checked">Dubbel</input>
+        </div>
+        <div class="settings-labels">
+    	    <label> Enkeltarief per KWh (€): </label>
+        </div>
+        <div class="settings-input">
+       	     <input id="Setting_20" type="float" name="SingleTarif"> </input><br>
+  	    </div>
+        <div class="settings-labels">
+    	    <label> Normaal tarief per KWh (€): </label>
+        </div>
+        <div class="settings-input">
+       	     <input id="Setting_21" type="number" name="NormalTarif"> </input><br>
+  	    </div> 
+  	    <div class="settings-labels">
+    	    <label> Daltarief per KWh (€): </label>
+        </div>
+        <div class="settings-input">
+       	     <input id="Setting_22" type="number" name="LowTarif"> </input><br>
+  	    </div>
+  	    <div class="settings-labels">
+    	    <label> Leveringskosten per dag (€): </label>
+        </div>
+        <div class="settings-input">
+       	     <input id="Setting_23" type="number" name="ElecDeliveryTarif"> </input><br>
+  	    </div>
+  	    <div class="settings-labels">
+    	    <label> Teruggave energiebelasting per dag (€): </label>
+        </div>
+        <div class="settings-input">
+       	     <input id="Setting_26" type="number" name="taxDeduct">  </input><br>
+        </div>
+        <div class="settings-labels">
+    	    <label> Netbeheerkosten per dag (€): </label>
+        </div>
+        <div class="settings-input">
+       	     <input id="Setting_27" type="number" name="utilityCosts">  </input><br>
+        </div>
+    	<div class="settings-labels">
+    	    <label> <h3>Tarieven Gas</h3> </label>
+        </div>
+  	    <div class="settings-labels">
+    	    <label> Tarief per m&#xB3 (€): </label>
+        </div>
+        <div class="settings-input">
+       	     <input id="Setting_24" type="number" name="GasTarif"> </input><br>
+       	     </div>
+  	    <div class="settings-labels">
+    	    <label> Leveringskosten per dag (€): </label>
+        </div>
+        <div class="settings-input">
+        	<input id="Setting_25" type="number" name="GasDeliveryTarif"> </input><br>
+        </div>
+        <div class="fixed-tabBtnFooter">
+    	    <br><br><br>
+    	    <button class="cnfbtn" onclick="ConfigData(event, 'save')" style="width:100px">Save</button>
+    	    <button class="cnfbtn" onclick="ConfigData(event, 'get')" style="width:100px">Cancel</button>
+        </div>
+        <br><br><br>	
+    </div> 
+  </div> 
+  <div id="spinner" class="spinner">
+        <img src="/energycompass/images/spinner.gif" alt="Loading" />  Loading...
+  </div>
+</div>
+  	
+  <div id="HomeAutomation" class="tabcontent">
+  <span onclick="this.parentElement.style.display='none'" class="topright">x</span>
+    <div class="fixed-tabTitle">
+    	<h2> Zonnescherm Instellingen </h2>
+    </div>
+     <br>
+   	<div class="float-box-tab2" style="width:50%; border:0px solid red; padding:1em">
+    	<div class="float-box-tab4" style="width:98%; border:0px solid blue">
+    	    <h3 style="text-align:center"> Instellingen Zonnescherm Voorkant </h3>
+		  	  <div class="settings-labels" style="text-align:left; width:58%; border:0px solid green">	
+      	          <label>Zonnescherm status: </label>
+      	      </div>
+      	      <div class="settings-input"  style="text-align:left; border:0px solid green">
+  	            <span class="status-in" id="setting_50" style="font-size: 200%; color:gray;">●</span>
+  		  	</div>
+    	    <div class="settings-labels" style="text-align:left; width:54%; border:0px solid green">	
+      	          <label>Zonnescherm AIN id: </label>
+  	        </div>
+  	        <div class="settings-input" >
+       	         <input id="Setting_51" type="text" name="ScreenAIN"></input>
+  	        </div>
+    	    <div class="settings-labels" style="text-align:left; width:54%; border:0px solid green">	
+      	          <label>Zonnescherm FritzDect400 button AIN id: </label>
+  	        </div>
+  	        <div class="settings-input">
+       	         <input id="Setting_52" type="text" name="FritzDect400AIN"></input>
+  	        </div>
+    	    <div class="settings-labels" style="text-align:left; width:54%; border:0px solid green">	
+      	          <label>Minimale zonnesterkte (W/m&#xB2):</label>
+  	        </div>
+  	        <div class="settings-input">
+       	         <input id="Setting_53" type="number" name="SunIntensity"></input>
+  	        </div>
+	         <div class="settings-labels" style="text-align:left; width:54%; border:0px solid green">	
+       	         <label>Maximale windsnelheid (m/sec): </label>
+            </div>
+  	        <div class="settings-input" >
+       	         <input id="Setting_54" type="number" name="Gusts"></input>
+  	        </div>
+  	        <div class="settings-labels" style="text-align:left; width:54%; border:0px solid green">	
+      	          <label>Schakel hysterese: </label>
+  	        </div>
+  	       <div class="settings-input">
+    	            <select name="switchDifferential" id="Setting_55">
+    			        <option value="0.10">10% </option>
+    			        <option value="0.15">15% </option>
+    			        <option value="0.20">20% </option>
+    			        <option value="0.25">25% </option>
+    			        <option value="0.30">30% </option>
+    			        <option value="0.35">35% </option>
+    			        <option value="0.40">40% </option>
+    			        <option value="0.45">45% </option>
+    			        <option value="0.50">50% </option>
+    			   </select>
+    		</div>
+  	        <div class="settings-labels" style="text-align:left; width:54%; border:0px solid green">	
+       	         <label>Sunrise en Sunset reductie in procenten: </label>
+            </div>
+            <div class="settings-input">
+    	            <select name="sunRiseSetReduction" id="Setting_56">
+    			        <option value="0.1">10% </option>
+    			        <option value="0.15">15% </option>
+    			        <option value="0.2">20% </option>
+    			        <option value="0.25">25% </option>
+    			        <option value="0.3">30% </option>
+    			        <option value="0.35">35% </option>
+    			        <option value="0.4">40% </option>
+    			        <option value="0.45">45% </option>
+    			        <option value="0.5">50% </option>
+    			   </select>
+    		</div>
+  	        <div class="settings-labels" style="text-align:left; width:54%; border:0px solid green">	
+       	         <label>GPS positie voor weerdata van Buienradar (nn.nnN-nn.nnE): </label>
+            </div>
+  	        <div class="settings-input">
+       	         <input id="Setting_57" type="text" name="GPS-Location" </input>
+  	        </div>
+  	         <div class="settings-labels" style="text-align:left; width:54%; border:0px solid green">	
+       	         <label>Zonnescherm reset tijd: </label>
+            </div>
+  	        <div class="settings-input">
+    	            <select name="resetTime" id="Setting_58">
+    			        <option value="21:00">21:00 </option>
+    			        <option value="21:15">21:15 </option>
+    			        <option value="21:30">21:30 </option>
+    			        <option value="21:45">21:45 </option>
+    			        <option value="22:00">22:00 </option>
+    			        <option value="22:15">22:15 </option>
+    			        <option value="22:30">22:30 </option>
+    			        <option value="22:45">22:45 </option>
+    			        <option value="23:00">23:00 </option>
+    			   </select>
+    		</div>
+  	         <div class="settings-labels" style="text-align:left; width:54%; border:0px solid green">	
+       	         <label>Zonnescherm schaduw start tijd: </label>
+            </div>
+  	        <div class="settings-input">
+    	            <select name="shadowStartTime" id="Setting_59">
+    			        <option value="00:00">00:00 </option>
+    			        <option value="09:00">09:00 </option>
+    			        <option value="10:00">10:00 </option>
+    			        <option value="11:00">11:00 </option>
+    			        <option value="12:00">12:00 </option>
+    			        <option value="13:00">13:00 </option>
+    			        <option value="14:00">14:00 </option>
+    			        <option value="15:00">15:00 </option>
+    			        <option value="16:00">16:00 </option>
+    			        <option value="17:00">17:00 </option>
+    			        <option value="18:00">18:00 </option>
+    			        <option value="19:00">19:00 </option>
+    			        <option value="20:00">20:00 </option>
+    			        <option value="21:00">21:00 </option>
+    			        <option value="22:00">22:00 </option>
+    			        <option value="23:00">23:00 </option>
+    			   </select>
+    		</div>
+  	         <div class="settings-labels" style="text-align:left; width:54%; border:0px solid green">	
+       	         <label>Zonnescherm schaduw eind tijd: </label>
+            </div>
+  	      <div class="settings-input">
+    	            <select name="shadowEndTime" id="Setting_60">
+    			        <option value="23:59">00:00 </option>
+    			        <option value="09:00">09:00 </option>
+    			        <option value="10:00">10:00 </option>
+    			        <option value="11:00">11:00 </option>
+    			        <option value="12:00">12:00 </option>
+    			        <option value="13:00">13:00 </option>
+    			        <option value="14:00">14:00 </option>
+    			        <option value="15:00">15:00 </option>
+    			        <option value="16:00">16:00 </option>
+    			        <option value="17:00">17:00 </option>
+    			        <option value="18:00">18:00 </option>
+    			        <option value="19:00">19:00 </option>
+    			        <option value="20:00">20:00 </option>
+    			        <option value="21:00">21:00 </option>
+    			        <option value="22:00">22:00 </option>
+    			        <option value="23:00">23:00 </option>
+    			   </select>
+    		</div>
+  	        <div class="settings-labels" style="text-align:left; width:54%; border:0px solid green">	
+       	         <label>Sunrise eind tijd: </label>
+            </div>
+  	        <div class="settings-input">
+    	            <select name="sunRiseEndTime" id="Setting_61">
+    			        <option value="08:00">08:00 </option>
+    			        <option value="08:30">08:30 </option>
+    			        <option value="09:00">09:00 </option>
+    			        <option value="09:30">09:30 </option>
+    			        <option value="10:00">10:00 </option>
+    			        <option value="10:30">10:30 </option>
+    			        <option value="11:00">11:00 </option>
+    			   </select>
+    		</div>  	         
+    		<div class="settings-labels" style="text-align:left; width:54%; border:0px solid green">	
+       	         <label>Sunset start tijd: </label>
+            </div>
+  	         <div class="settings-input">
+    	            <select name="sunSetStartTime" id="Setting_62">
+    			        <option value="18:00">18:00 </option>
+    			        <option value="18:15">18:15 </option>
+    			        <option value="18:30">18:30 </option>
+    			        <option value="18:45">18:45 </option>
+    			        <option value="19:00">19:00 </option>
+    			        <option value="19:15">19:15 </option>
+    			        <option value="19:30">19:30 </option>
+    			        <option value="19:45">19:45 </option>
+    			        <option value="20:00">20:00 </option>
+    			   </select>
+    		</div>
+    		<div class="fixed-tabBtnFooter">
+    	        <br><br>
+    	        <button class="cnfbtn" onclick="ScreenConfig(event, 'save', 'Front')" style="width:100px">Save</button>
+            </div>
+                <br>
+            <div class="settings-labels" style="text-align:left; width:54%; border:0px solid green">	
+                <label> Log data zonnescherm voor: </label>
+            </div>
+            <textArea name="fronScreen" rows="20" cols="80" style="resize: none; border:1px solid grey" scrollTop ="scrollHeight";
+                <div id="frontScreen" >No Log text found </div> >  
+            </textArea>
+        </div>
+      </div>
+       	<div class="float-box-tab2" style="border:0px solid red;width:45%">
+       	     <h3> Huidige weersomstandigheden </h3>
+       	         <div class="float-box-tab3" style="border:0px solid black;width:55%;height:100%">
+       	             <iframe src="https://gadgets.buienradar.nl/gadget/zoommap/?lat=52.52&lng=5.7&overname=2&zoom=13&naam=8251AW&size=2b&voor=1" scrolling=yes width=550 height=350 frameborder=yes></iframe>
+       	         </div>
+       	          <div class="float-box-tab4"  style="padding-left:0em; width:50%; border:0px solid blue">
+      	                   <div class="settings-labels" style="text-align:left; width:54%; border:0px solid green">	
+      	                      <label>Temperatuur (&#8451): </label>
+      	                  </div>
+      	                  <div class="settings-input" >
+      	                    <input disabled id="Setting_80" type="number" name="currentTemp"></input>
+      	                  </div>
+      	                  <div class="settings-labels" style="text-align:left; width:54%; border:0px solid green">	
+      	                      <label>Wind stoten (m/sec): </label>
+      	                  </div>
+      	                  <div class="settings-input">
+      	                    <input disabled id="Setting_81" type="number" name="currentWind"></input>
+      	                  </div>
+      	                  <div class="settings-labels" style="text-align:left; width:54%; border:0px solid green">	
+      	                      <label>Zon intensiteit (W/m&#xB2): </label>
+      	                  </div>
+      	                  <div class="settings-input">
+      	                    <input disabled id="Setting_82" type="number" name="currentSun"></input>
+      	                  </div>
+      	          </div>
+            </div>
+       		<div class="float-box-tab2" style="width:50%; border:0px solid red; padding:1em">
+    	    <div class="float-box-tab4" style="width:98%; border:0px solid blue">
+    	    <h3 style="text-align:center"> Instellingen Zonnescherm Achterkant </h3>
+		  	  <div class="settings-labels" style="text-align:left; width:58%; border:0px solid green">	
+      	          <label>Zonnescherm status:</label>
+      	      </div>
+      	      <div class="settings-input"  style= "text-align:left; border:0px solid green">
+  	            <span class="status-in" id="setting_63" style="font-size: 200%; color:gray;">●</span>
+  		  	</div>
+    	    <div class="settings-labels" style="text-align:left; width:54%; border:0px solid green">	
+      	          <label>Zonnescherm AIN id: </label>
+  	        </div>
+  	        <div class="settings-input" >
+       	         <input id="Setting_64" type="text" name="ScreenAIN"></input>
+  	        </div>
+    	    <div class="settings-labels" style="text-align:left; width:54%; border:0px solid green">	
+      	          <label>Zonnescherm FritzDect400 button AIN id: </label>
+  	        </div>
+  	        <div class="settings-input">
+       	         <input id="Setting_65" type="text" name="FritzDect400AIN"></input>
+  	        </div>
+    	    <div class="settings-labels" style="text-align:left; width:54%; border:0px solid green">	
+      	          <label>Minimale zonnesterkte (W/m&#xB2):</label>
+  	        </div>
+  	        <div class="settings-input">
+       	         <input id="Setting_66" type="number" name="SunIntensity"></input>
+  	        </div>
+	         <div class="settings-labels" style="text-align:left; width:54%; border:0px solid green">	
+       	         <label>Maximale windsnelheid (m/sec): </label>
+            </div>
+  	        <div class="settings-input" >
+       	         <input id="Setting_67" type="number" name="Gusts"></input>
+  	        </div>
+  	         <div class="settings-labels" style="text-align:left; width:54%; border:0px solid green">	
+      	          <label>Schakel hysterese: </label>
+  	        </div>
+  	        <div class="settings-input">
+    	            <select name="switchDifferential" id="Setting_68">
+    			        <option value="0.10">10% </option>
+    			        <option value="0.15">15% </option>
+    			        <option value="0.20">20% </option>
+    			        <option value="0.25">25% </option>
+    			        <option value="0.30">30% </option>
+    			        <option value="0.35">35% </option>
+    			        <option value="0.40">40% </option>
+    			        <option value="0.45">45% </option>
+    			        <option value="0.50">50% </option>
+    			   </select>
+    		</div>
+  	        <div class="settings-labels" style="text-align:left; width:54%; border:0px solid green">	
+       	         <label>Sunrise en Sunset reductie in procenten: </label>
+            </div>
+            <div class="settings-input">
+    	            <select name="sunRiseSetReduction" id="Setting_69">
+    			        <option value="0.1">10% </option>
+    			        <option value="0.15">15% </option>
+    			        <option value="0.2">20% </option>
+    			        <option value="0.25">25% </option>
+    			        <option value="0.3">30% </option>
+    			        <option value="0.35">35% </option>
+    			        <option value="0.4">40% </option>
+    			        <option value="0.45">45% </option>
+    			        <option value="0.5">50% </option>
+    			   </select>
+    		</div>
+  	        <div class="settings-labels" style="text-align:left; width:54%; border:0px solid green">	
+       	         <label>GPS positie voor weerdata van Buienradar (nn.nnN-nn.nnE): </label>
+            </div>
+  	        <div class="settings-input">
+       	         <input id="Setting_70" type="text" name="GPS-Location"</input>
+  	        </div>
+  	         <div class="settings-labels" style="text-align:left; width:54%; border:0px solid green">	
+       	         <label>Zonnescherm reset tijd: </label>
+            </div>
+  	        <div class="settings-input">
+    	            <select name="resetTime" id="Setting_71">
+    			        <option value="21:00">21:00 </option>
+    			        <option value="21:15">21:15 </option>
+    			        <option value="21:30">21:30 </option>
+    			        <option value="21:45">21:45 </option>
+    			        <option value="22:00">22:00 </option>
+    			        <option value="22:15">22:15 </option>
+    			        <option value="22:30">22:30 </option>
+    			        <option value="22:45">22:45 </option>
+    			        <option value="23:00">23:00 </option>
+    			   </select>
+    		</div>
+  	         <div class="settings-labels" style="text-align:left; width:54%; border:0px solid green">	
+       	         <label>Zonnescherm schaduw start tijd: </label>
+            </div>
+  	        <div class="settings-input">
+    	            <select name="shadowStartTime" id="Setting_72">
+    			        <option value="23:59">00:00 </option>
+    			        <option value="09:00">09:00 </option>
+    			        <option value="10:00">10:00 </option>
+    			        <option value="11:00">11:00 </option>
+    			        <option value="12:00">12:00 </option>
+    			        <option value="13:00">13:00 </option>
+    			        <option value="14:00">14:00 </option>
+    			        <option value="15:00">15:00 </option>
+    			        <option value="16:00">16:00 </option>
+    			        <option value="17:00">17:00 </option>
+    			        <option value="18:00">18:00 </option>
+    			        <option value="19:00">19:00 </option>
+    			        <option value="20:00">20:00 </option>
+    			        <option value="21:00">21:00 </option>
+    			        <option value="22:00">22:00 </option>
+    			        <option value="23:00">23:00 </option>
+    			   </select>
+    		</div>
+  	         <div class="settings-labels" style="text-align:left; width:54%; border:0px solid green">	
+       	         <label>Zonnescherm schaduw eind tijd: </label>
+            </div>
+  	      <div class="settings-input">
+    	            <select name="shadowEndTime" id="Setting_73">
+    			        <option value="23:59">00:00 </option>
+    			        <option value="09:00">09:00 </option>
+    			        <option value="10:00">10:00 </option>
+    			        <option value="11:00">11:00 </option>
+    			        <option value="12:00">12:00 </option>
+    			        <option value="13:00">13:00 </option>
+    			        <option value="14:00">14:00 </option>
+    			        <option value="15:00">15:00 </option>
+    			        <option value="16:00">16:00 </option>
+    			        <option value="17:00">17:00 </option>
+    			        <option value="18:00">18:00 </option>
+    			        <option value="19:00">19:00 </option>
+    			        <option value="20:00">20:00 </option>
+    			        <option value="21:00">21:00 </option>
+    			        <option value="22:00">22:00 </option>
+    			        <option value="23:00">23:00 </option>
+    			   </select>
+    		</div>
+  	        <div class="settings-labels" style="text-align:left; width:54%; border:0px solid green">	
+       	         <label>Sunrise eind tijd: </label>
+            </div>
+  	        <div class="settings-input">
+    	            <select name="sunRiseEndTime" id="Setting_74">
+    			        <option value="08:00">08:00 </option>
+    			        <option value="08:30">08:30 </option>
+    			        <option value="09:00">09:00 </option>
+    			        <option value="09:30">09:30 </option>
+    			        <option value="10:00">10:00 </option>
+    			        <option value="10:30">10:30 </option>
+    			        <option value="11:00">11:00 </option>
+    			   </select>
+    		</div>  	         
+    		<div class="settings-labels" style="text-align:left; width:54%; border:0px solid green">	
+       	         <label>Sunset start tijd: </label>
+            </div>
+  	         <div class="settings-input">
+    	            <select name="sunSetStartTime" id="Setting_75">
+    			        <option value="18:00">18:00 </option>
+    			        <option value="18:15">18:15 </option>
+    			        <option value="18:30">18:30 </option>
+    			        <option value="18:45">18:45 </option>
+    			        <option value="19:00">19:00 </option>
+    			        <option value="19:15">19:15 </option>
+    			        <option value="19:30">19:30 </option>
+    			        <option value="19:45">19:45 </option>
+    			        <option value="20:00">20:00 </option>
+    			   </select>
+    		</div>
+    		<div class="fixed-tabBtnFooter">
+    	        <br><br>
+    	        <button class="cnfbtn" onclick="ScreenConfig(event, 'save', 'Back')" style="width:100px">Save</button>
+            </div>
+               <br>
+            <div class="settings-labels" style="text-align:left; width:54%; border:0px solid green">	
+                <label> Log data zonnescherm achter: </label>
+            </div>
+            <textArea name="backScreen" rows="20" cols="80" style="resize: none; border:1px solid grey" 
+                <div id="backScreen" >No Log text found </div> >  
+            </textArea>
+       </div>
+      </div>
+
+ 
+</body>
+
+<script src="js/getConfig.js"></script>
+<script src="js/getScreenConfig.js"></script>
+<script src="js/currentUsage.js"></script>
+<script src="js/getP1Service.js"></script>
+<script type="text/javascript">
+
+/* Some post-page-load settings need to be applied on the tabs like graph color and view preferences*/
+
+var coll = document.getElementsByClassName("collapsible");
+var i;
+
+for (i = 0; i < coll.length; i++) {
+  coll[i].addEventListener("click", function() {
+    this.classList.toggle("active");
+    var content = this.nextElementSibling;
+    if (content.style.display === "block") {
+      content.style.display = "none";
+    } else {
+      content.style.display = "block";
+    }
+  });
+}
+
+document.getElementById("station").click();
+
+/* Pre-load the Configuration tab values so that we can use them later by obtaining 
+   the value from the config tab div-id */
+ConfigData(event,"get");
+ScreenConfig(event,"get");
+P1Service(event,"status");
+/* Get the log data from the screenControl deamons */
+getLogText("location=frontScreen");
+getLogText("location=backScreen");
+
+//First open the default tab and display its graphs.
+document.getElementById("defaultTabOpen").click();
+
+
+/* Now that the tabs are loaded and the first tab has been selected (defaultTab), select 
+   the graph type (gas || electricity to be display. This is dependent on the default 
+   graph type selected in the settings tab. */
+/* Get the settings value for "DftOverview" and show the graphs for either gas or 
+   electricity and select a default button on the History Tab. */
+var configQuery = "SELECT * FROM Configuration";
+var data = [];
+$.ajax({
+        type:'POST',
+        url:'php/mySQL_Config.php', 
+        data: {"query" : configQuery}, 
+        dataType:'json',
+        success: function(data) {
+        /* Activate the tab selection button based on the selected value from 
+           the configuration setting that was set in the Settings tab and stored in the 
+           Configuration table of the SmartMeter database */
+        	var ovvSelectButton = "ovv" + data.DftOverview;
+			eval("document.getElementById" + "('"+ovvSelectButton+"').click()");
+			/* Do the same for the History tab */
+			var hstSelectButton = "hst" + data.DftOverview;
+			eval("document.getElementById" + "('"+hstSelectButton+"').click()");
+			/* Do the same for the Cost tab */
+			var cstSelectButton = "cst" + data.DftOverview;
+			eval("document.getElementById" + "('"+cstSelectButton+"').click()");
+			/* Select a theme for the charts to be made dynamic from db & configuration tab. */
+			zingchart.THEME = data.ChartTheme;
+			},	
+		error: function(jqXHR, textStatus, errorThrown) {
+                 alert("JSON error 3 " +textStatus + " " + errorThrown);
+            }
+});
+
+/* Button press function to set the css style to active (pressed) and remove the active 
+   style for the one that is unpressed. */
+$(function() {
+    $('.ovvbtn').on('click', function(eventBtnOverview) {
+        $('.ovvbtn.active').removeClass('active');
+        $(this).addClass('active');
+	});
+	$('.hstbtn').on('click', function(eventBtnHistory) {
+        $('.hstbtn.active').removeClass('active');
+        $(this).addClass('active');
+	});
+	$('.wtrbtn').on('click', function(eventBtnWeather) {
+        $('.wtrbtn.active').removeClass('active');
+        $(this).addClass('active');
+	});
+	$('.cstbtn').on('click', function(eventBtnCost) {
+        $('.cstbtn.active').removeClass('active');
+        $(this).addClass('active');
+	});
+});
+</script>
+</html>
+
+<!-- For debuging purposes to write data to a div on the page >
+        $('#EPOS').html('<br>EPOS values: ' +dateValues);
+        $('#Series').html('<br>Series values: ' +seriesValues);
+      	<div id="EPOS"></div> <br>
+    	<div id="Series"></div-->
