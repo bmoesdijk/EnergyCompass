@@ -20,11 +20,15 @@ Make sure that the following packages are pre-installed on your Synology NAS:
 - python3
 - pip3
 - mysql (MariaDB10)
-
-
+<br>
+<br>
 copy all files and folder to /volume1/web/Energycompass directory
-run the .sql script to create the database
-
-
-
+<br>
+run the .sql script (Create_SmartMeterDB.sql) from the tools directory to create the database.
+For example:
+baseDir="/volume0/web/energycompass/tools"
+MYSQL=`which mysql`
+$MYSQL -h localhost -u root -p SmartMeter < "$baseDir/Create_SmartMeterDB.sql"
+<br>
+<br>
 open the website in your web-browser by typing http://<ip-adress>:<portnumber of webserver>
