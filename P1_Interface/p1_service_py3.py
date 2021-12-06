@@ -2,7 +2,7 @@
 #!/volume1/@appstore/py3k/usr/local/bin/python3
 #DSMR P1 smartmeter data retreival
 #Date: 11-May-2020
-#version: 2.0 
+#version: 1.0 
 #Author: B. van de Moesdijk
 #License: 
 """	This file is part of EnergyCompas.
