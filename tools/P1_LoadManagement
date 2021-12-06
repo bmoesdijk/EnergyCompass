@@ -1,0 +1,159 @@
+# DSMR P1 uitlezen
+# (c) #DSMR P1 Load Management
+#Date: 04-Feb-2020
+#version: 1.0
+#Author: B. van de Moesdijk
+#License: 
+""" 
+This file is part of EnergyCompas.
+
+EnergyCompass is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+any later version.
+
+EnergyCompass is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with EnergyCompass.  If not, see <http://www.gnu.org/licenses/>.
+"""
+##############################################################################
+#Version history:
+##############################################################################
+versie = "1.0"
+##############################################################################
+#Define dependencies
+##############################################################################  
+import logging
+import pymysql
+import sys
+import serial
+import signal
+import os
+import datetime
+#Check sudo user access
+user = os.getenv("SUDO_USER")
+#if user is None:
+#    print "This script requires 'root' access. Please use 'sudo' to start"
+#    sys.exit(0)
+##############################################################################
+#Initialize the logger                                                                 
+##############################################################################
+logger = logging.getLogger('P1_LoadManagment')
+hdlr = logging.FileHandler('/var/log/P1_LoadManagment.log')
+formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+hdlr.setFormatter(formatter)
+logger.addHandler(hdlr) 
+#logger.isEnabledFor(logging.WARNING)
+##############################################################################
+#Initialize the database connection.                                                              
+##############################################################################
+DBconnect = pymysql.connect(host="localhost",port=3307,user="root",passwd="",db="SmartMeter" ) 
+cursor = DBconnect.cursor() 
+DBconnect.autocommit(True) #Autocommit all changes before closing the database.  
+##############################################################################
+#Define our variables
+##############################################################################
+#Initialise the serial interface
+verbose = 1
+ser = serial.Serial()
+#Define the counter ID's
+EnergyT1CountId = "0:1.8.1"
+EnergyT2CountId = "0:1.8.2"
+EnergyT1DelivId = "0:2.8.1"
+EnergyT2DelivId = "0:2.8.2"
+now = datetime.datetime.now()
+time = now.strftime("%H:%M:%S")
+#Use the database connection to get the Solar result from the database.                                                     
+cursor.execute("Select Solar FROM Configuration")  
+Solar = cursor.fetchone()[0]
+#Define variables
+usage = None
+
+Pl1_float = 0.000
+Pl1_prev = 0.000
+Pl1_total = 0.000
+Il1 = 0.000
+Il1_float = 0.000
+
+##############################################################################
+#Obtain meter specifics from the database to setup a serial connection to the meter
+##############################################################################          
+cursor.execute("select * FROM MeterBrand \
+        WHERE Brand IN (select MeterBrand from Configuration) \
+        AND Model IN (select MeterType from Configuration)") 
+DbResponse = cursor.fetchall()
+for item in DbResponse:
+    meterbrand = "%s" % item[1]
+    baudrate = int(item[4])
+    bytesize = int(item[5])
+    parity = "%s" % item[6]
+    stopbits = int(item[7])
+    xonxoff = int(item[8])
+    rtscts = int(item[9])
+    timeout = int(item[10])
+##############################################################################
+#Main program
+##############################################################################
+#Catch CNTR+C to exit the program
+def signal_handler(signal, frame):
+    print('Exiting Ctrl+C detected')
+    ser.close()
+    sys.exit(0)
+
+#Set COM port config
+ser.baudrate = baudrate
+ser.bytesize = bytesize
+ser.parity = parity
+ser.stopbits = stopbits
+ser.xonxoff = xonxoff
+ser.rtscts = rtscts
+ser.timeout = timeout
+ser.port = "/dev/ttyUSB0"
+
+def Telegram(EnergyT1CountId,EnergyT2CountId,Pl1_float,Pl1_prev,Pl1_total,Il1,Il1_float):
+	#Open COM port
+	try:
+		ser.open()
+	except:
+                ser.close()
+                sys.exit(logger.error("Error (001): Connecting interface  %s."  % ser.name))     
+                #Initialise
+        while True:
+                try:
+                        p1_raw = ser.readline()
+                except:
+                        sys.exit(logger.error("Error (002): Cannot currently read from Seriel port %s." % ser.name))
+                    
+                p1_str = str(p1_raw.rstrip('\n'))
+                p1_line = p1_str.strip()
+                if EnergyT1CountId in p1_line or EnergyT2CountId in p1_line:
+                        Pl1_float = float(p1_line.split("*",1)[0].split("(",1)[1])
+                        Pl1_total = Pl1_total + Pl1_float
+                        continue
+                if "!" in p1_str:
+                        if Pl1_prev == 0.0:
+                            #print("No previous values found (First run?). Waiting for next P1-telegram")
+                            #print "[{plot0:%s,'scale-x':%s,}]" % ("0.0", time)
+                            #return "[{plot0:%s,'scale-x':%s,}]" % (Il1_float, time)
+                            Pl1_prev = Pl1_total
+                            Pl1_total = 0.0
+                            continue
+                        Il1 = ((((Pl1_total - Pl1_prev)*1000)/10)*3600)/230
+                        Il1_float = float("{0:.1f}".format(Il1)) #format to 3 digits behind the comma
+                        #print "Huidige stroomverbruikt: %sA" % (Il1_float)
+                        return "[{plot0:%s,'scale-x':'%s',}]" % (Il1_float, time)
+                        #return Il1_float:
+                        Pl1_prev = Pl1_total
+                        Pl1_total = 0.0
+                        Il1 = 0.0
+                        Il1_float = 0.0
+                continue
+
+#signal.signal(signal.SIGINT, signal_handler)
+response = Telegram(EnergyT1CountId,EnergyT2CountId,Pl1_float,Pl1_prev,Pl1_total,Il1,Il1_float) #Call the function
+print(response)
+exit(0)
