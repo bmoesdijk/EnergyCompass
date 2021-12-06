@@ -28,6 +28,7 @@ run the .sql script (Create_SmartMeterDB.sql) from the tools directory to create
 For example:<br>
 baseDir="/volume0/web/energycompass/tools"<br>
 MYSQL=`which mysql`<br>
+echo "Press 'Enter' when asked for password or type the mySQL password when set" <br>
 $MYSQL -h localhost -u root -p SmartMeter < "$baseDir/Create_SmartMeterDB.sql"
 <br>
 <br>
