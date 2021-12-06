@@ -25,9 +25,9 @@ Make sure that the following packages are pre-installed on your Synology NAS:
 copy all files and folder to /volume1/web/Energycompass directory
 <br>
 run the .sql script (Create_SmartMeterDB.sql) from the tools directory to create the database.
-For example:
-baseDir="/volume0/web/energycompass/tools"
-MYSQL=`which mysql`
+For example:<br>
+baseDir="/volume0/web/energycompass/tools"<br>
+MYSQL=`which mysql`<br>
 $MYSQL -h localhost -u root -p SmartMeter < "$baseDir/Create_SmartMeterDB.sql"
 <br>
 <br>
