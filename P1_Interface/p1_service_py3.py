@@ -1,5 +1,23 @@
 #!/usr/bin/python
 #!/volume1/@appstore/py3k/usr/local/bin/python3
+#DSMR P1 smartmeter data retreival
+#Date: 11-May-2020
+#version: 2.0 
+#Author: B. van de Moesdijk
+#License: 
+"""	This file is part of EnergyCompas.
+    EnergyCompass is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    any later version.
+    EnergyCompass is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    You should have received a copy of the GNU General Public License
+    along with EnergyCompass.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
 
 import p1_webserver_py3
 import p1_interface_py3
