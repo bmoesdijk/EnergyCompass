@@ -64,7 +64,7 @@ loglevel = logger.setLevel("DEBUG")
 #Define our variables
 ##############################################################################
 #Initialise the serial interface
-version = "2.8"
+version = "2.8.3"
 ser = serial.Serial()
 #Define the counter ID's
 gasCountId="0-1:24.2.1"
@@ -72,12 +72,12 @@ EnergyT1CountId="1-0:1.8.1"
 EnergyT2CountId="1-0:1.8.2"
 EnergyT1DelivId="1-0:2.8.1"
 EnergyT2DelivId="1-0:2.8.2"
-currentPL1Id="1-0:21.7.0"
-currentVL1Id="1-0:32.7.0"
-currentPL2Id="1-0:41.7.0"
-currentVL2Id="1-0:52.7.0"
-currentPL3Id="1-0:61.7.0"
-currentVL3Id="1-0:72.7.0"
+currentPL1Id="1-0:22.7.0"
+currentIL1Id="1-0:31.7.0"
+currentPL2Id="1-0:42.7.0"
+currentIL2Id="1-0:51.7.0"
+currentPL3Id="1-0:62.7.0"
+currentIL3Id="1-0:71.7.0"
 #Fritz-Box variables
 un = "smarthome";
 pw = "smarthome123";
@@ -210,6 +210,7 @@ def processTelegram(Solar, p1_telegram):
                 PrevTd2_flo = float(getDataFromDb("SELECT deliverT1 from Electricity ORDER BY id DESC LIMIT 1"))
                 if ( PrevTd2_flo == None ): 
                     PrevTd2_flo = "0.0"  #In case there no response from the DB.
+                else:
                     t2Deliv = td2_flo - PrevTd2_flo
             except:
                 logger.error("(412): Unexpected error: %s", sys.exc_info()[1])
@@ -250,28 +251,31 @@ def loadManagement( p1_telegram, I_L1queue, I_L2queue, I_L3queue):
         start = p1_telegram.find(currentPL1Id) + 11
         end = p1_telegram.find('*', start)
         P_L1 = p1_telegram[start:end].strip("(")
-        start = p1_telegram.find(currentVL1Id) + 11
+        start = p1_telegram.find(currentIL1Id) + 11
         end = p1_telegram.find('*', start)
-        V_L1 = p1_telegram[start:end].strip("(")
-        I_L1 = "{0:.1f}".format((float(P_L1) * 1000) / float(V_L1))
+        I_L1 = p1_telegram[start:end].strip("(")
+        I_L1 = "{0:.1f}".format(float(I_L1))
+        #I_L1 = "{0:.1f}".format((float(P_L1) * 1000) / float(V_L1))
         #print("Amperage lijn 1: %s " % I_L1)
         ###################################
         start = p1_telegram.find(currentPL2Id) + 11
         end = p1_telegram.find('*', start)
         P_L2 = p1_telegram[start:end].strip("(")
-        start = p1_telegram.find(currentVL2Id) + 11
+        start = p1_telegram.find(currentIL2Id) + 11
         end = p1_telegram.find('*', start)
-        V_L2 = p1_telegram[start:end].strip("(")
-        I_L2 = "{0:.1f}".format((float(P_L2) * 1000) / float(V_L2))
+        I_L2 = p1_telegram[start:end].strip("(")
+        I_L2 = "{0:.1f}".format(float(I_L2))
+        #I_L2 = "{0:.1f}".format((float(P_L2) * 1000) / float(V_L2))
         #print("Amperage lijn 2: %s " % I_L2)
         ###################################
         start = p1_telegram.find(currentPL3Id) + 11
         end = p1_telegram.find('*', start)
         P_L3 = p1_telegram[start:end].strip("(")
-        start = p1_telegram.find(currentVL3Id) + 11
+        start = p1_telegram.find(currentIL3Id) + 11
         end = p1_telegram.find('*', start)
-        V_L3 = p1_telegram[start:end].strip("(")
-        I_L3 = "{0:.1f}".format((float(P_L3) * 1000) / float(V_L3))
+        I_L3 = p1_telegram[start:end].strip("(")
+        I_L3 = "{0:.1f}".format(float(I_L3))
+        #I_L3 = "{0:.1f}".format((float(P_L3) * 1000) / float(V_L3))
         #print("Amperage lijn 3: %s " % I_L3)
         ###################################
         #Use the database connection to get the LoadManagement setting from the database.
@@ -317,7 +321,6 @@ def writeToDb(Solar, tu1_flo, tu2_flo, td1_flo, td2_flo, p1_flo, E_Usage, G_Usag
             #Write the Electricity values to the Electricity table
             cursor.execute("INSERT into Electricity (countT1, countT2, deliverT1, deliverT2, myUsage, myDelivery) \
             VALUES ( %s, %s, %s, %s, %s, %s)", (float(tu1_flo), float(tu2_flo), float(td1_flo), float(td2_flo), float("{0:.3f}".format(E_Usage)), float("{0:.3f}".format(E_Deliv))))
-
             #Write the gas counter only on the full hour. Intermediate counters are always 0 (empty)
             if ( ":00:" in timestamp ):
                 #Update the usage in the last entry 
@@ -361,18 +364,14 @@ def checkDBWriteTime():
         cur_hour = "%02d" %cur_time.hour
         if ( str(cur_minute) in writeToDbTime):
             if ( prev_minute == cur_minute and prev_hour != cur_hour):
-               return "True"
-               print("True1")
+                return "True"
             elif ( prev_minute != cur_minute ):
                 return "True"
-                print("True2")
         else:
             return "False"
-            Print("False1")
     except:
         logger.error("(415): Unexpected error in checkDBWriteTime Module: %s", sys.exc_info()[0])
         return "False"
-        Print("False2")
 
 ##############################################################################
 #Open the P1 interface port
@@ -441,16 +440,16 @@ def getData( I_L1queue, I_L2queue, I_L3queue):
                 cur_hour = "%02d" %cur_time.hour
                 #if (cur_hour == "06" and cur_minute == "30"):
                     #raise Exeption
-                p1_raw = ser.readline(50)
+                p1_raw = ser.readline()
                 p1_data = p1_data + str(p1_raw) #Add telegram line to our data buffer
                 if ( "!" in p1_data ):
-                   # print(p1_data)
+                    #logger.debug(p1_data)
                     #search the check buffer for our response data. If pressent continue
                     if ( EnergyT1CountId in p1_data and EnergyT2CountId in p1_data and \
                             gasCountId in p1_data and currentPL1Id in p1_data and \
                             currentPL2Id in p1_data and currentPL3Id in p1_data and \
-                            currentVL1Id in p1_data and currentVL2Id in p1_data and \
-                            currentVL3Id in p1_data and EnergyT1DelivId in p1_data and \
+                            currentIL1Id in p1_data and currentIL2Id in p1_data and \
+                            currentIL3Id in p1_data and EnergyT1DelivId in p1_data and \
                             EnergyT2DelivId in p1_data  ):
                         loadManagement( p1_data, I_L1queue, I_L2queue, I_L3queue )
                         if (  checkDBWriteTime() == "True" ):
@@ -488,3 +487,4 @@ def getData( I_L1queue, I_L2queue, I_L3queue):
                     pass
             
 ####End Main process-loop    
+
